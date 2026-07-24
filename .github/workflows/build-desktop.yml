@@ -1,5 +1,4 @@
 name: Собрать НеЗабудка .exe
-
 on:
   workflow_dispatch:
   push:
@@ -9,36 +8,29 @@ on:
       - 'artifacts/smart-notes/**'
       - 'lib/**'
       - '.github/workflows/build-desktop.yml'
-
 jobs:
   build-windows:
     name: Сборка Windows .exe
     runs-on: windows-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: '10'
           run_install: false
-
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-
       - name: Build desktop app
         run: pnpm --filter @workspace/desktop make:win
         env:
           BROWSER: none
           CSC_IDENTITY_AUTO_DISCOVERY: false
-
       - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
