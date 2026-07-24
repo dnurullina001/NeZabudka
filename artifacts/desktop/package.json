@@ -1,6 +1,8 @@
 {
   "name": "@workspace/desktop",
   "version": "1.0.0",
+  "description": "НеЗабудка — приложение для заметок",
+  "author": "ТеДо",
   "private": true,
   "main": "dist/main.js",
   "scripts": {
