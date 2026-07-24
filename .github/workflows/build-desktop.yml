@@ -56,6 +56,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+        # 5.5. Принудительно поставить недостающий Windows-модуль Rollup
+      - name: Fix rollup windows binary
+        run: pnpm add -D @rollup/rollup-win32-x64-msvc -w
+
       # 6. Собрать фронтенд + упаковать в Electron
       - name: Build desktop app
         run: pnpm --filter @workspace/desktop make:win
