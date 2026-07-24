@@ -36,7 +36,6 @@
   "nsis": {
     "oneClick": false,
     "allowToChangeInstallationDirectory": true,
-    "installerHeaderBitmap": "",
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true,
     "shortcutName": "НеЗабудка"
