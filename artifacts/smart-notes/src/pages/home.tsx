@@ -65,14 +65,18 @@ const NezabudkaMascot = () => {
     }, interval);
   };
 
+  // On mount: just sit still on idle pose, no cycling
   useEffect(() => {
-    startCycle(IDLE_POSES, 3500);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleMouseEnter = () => startCycle(ACTION_POSES, 1200);
-  const handleMouseLeave = () => startCycle(IDLE_POSES, 3500);
+  const handleMouseLeave = () => {
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    setPoses(IDLE_POSES);
+    setPoseIdx(0);
+    setLabel('');
+  };
 
   const currentPose = poses[poseIdx] ?? mascotIdle;
 

@@ -1,0 +1,33 @@
+{
+  "name": "@workspace/desktop",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "electron .",
+    "pack": "node build.mjs && electron-builder --dir",
+    "make": "node build.mjs && electron-builder",
+    "make:win": "node build.mjs && electron-builder --win",
+    "make:mac": "node build.mjs && electron-builder --mac",
+    "make:linux": "node build.mjs && electron-builder --linux",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "drizzle-orm": "^0.44.2",
+    "express": "^5.2.1",
+    "sql.js": "^1.12.0",
+    "zod": "^3.25.67"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.3",
+    "@types/node": "^22.15.29",
+    "@types/sql.js": "^1.4.9",
+    "electron": "^36.4.0",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.25.5",
+    "typescript": "~5.9.3"
+  }
+}

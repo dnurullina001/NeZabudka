@@ -1,0 +1,44 @@
+{
+  "appId": "com.tedo.nezabudka",
+  "productName": "НеЗабудка",
+  "copyright": "Copyright © 2026 ТеДо",
+  "directories": {
+    "output": "release",
+    "buildResources": "assets"
+  },
+  "files": [
+    "dist/main.js",
+    "dist/main.js.map",
+    "package.json"
+  ],
+  "extraResources": [
+    { "from": "dist/renderer", "to": "renderer", "filter": ["**/*"] },
+    { "from": "dist/sql-wasm.wasm", "to": "sql-wasm.wasm" }
+  ],
+  "asar": true,
+  "win": {
+    "target": [
+      { "target": "nsis", "arch": ["x64"] },
+      { "target": "zip",  "arch": ["x64"] }
+    ],
+    "icon": "assets/icon.ico"
+  },
+  "mac": {
+    "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
+    "category": "public.app-category.productivity",
+    "icon": "assets/icon.icns"
+  },
+  "linux": {
+    "target": [{ "target": "AppImage", "arch": ["x64"] }],
+    "category": "Office",
+    "icon": "assets/icon.png"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "installerHeaderBitmap": "",
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "НеЗабудка"
+  }
+}
