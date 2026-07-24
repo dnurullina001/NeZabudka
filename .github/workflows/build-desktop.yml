@@ -33,48 +33,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Установить Windows native пакеты напрямую
-        shell: pwsh
-        run: |
-          $rollupPath = "node_modules\.pnpm\rollup@4.62.2\node_modules\@rollup"
-          New-Item -ItemType Directory -Force -Path $rollupPath
-          npm install --prefix . @rollup/rollup-win32-x64-msvc@4.62.2 --no-save
-          
-          $lightningPath = "node_modules\.pnpm\lightningcss@1.32.0\node_modules\lightningcss"
-          npm install --prefix . lightningcss-win32-x64-msvc@1.32.0 --no-save
-          
-          npm install --prefix . @tailwindcss/oxide-win32-x64-msvc@4.3.3 --no-save
-
-      - name: Скопировать native пакеты в нужные места
-        shell: pwsh
-        run: |
-          # rollup
-          $src = "node_modules\@rollup\rollup-win32-x64-msvc"
-          $dst = "node_modules\.pnpm\rollup@4.62.2\node_modules\@rollup\rollup-win32-x64-msvc"
-          if (Test-Path $src) {
-            New-Item -ItemType Directory -Force -Path (Split-Path $dst)
-            Copy-Item -Recurse -Force $src $dst
-            Write-Host "✅ rollup native скопирован"
-          }
-          
-          # lightningcss
-          $src2 = "node_modules\lightningcss-win32-x64-msvc"
-          $dst2 = "node_modules\.pnpm\lightningcss@1.32.0\node_modules\lightningcss-win32-x64-msvc"
-          if (Test-Path $src2) {
-            New-Item -ItemType Directory -Force -Path (Split-Path $dst2)
-            Copy-Item -Recurse -Force $src2 $dst2
-            Write-Host "✅ lightningcss native скопирован"
-          }
-          
-          # tailwindcss oxide
-          $src3 = "node_modules\@tailwindcss\oxide-win32-x64-msvc"
-          $dst3 = "node_modules\.pnpm\@tailwindcss+oxide@4.3.3\node_modules\@tailwindcss\oxide-win32-x64-msvc"
-          if (Test-Path $src3) {
-            New-Item -ItemType Directory -Force -Path (Split-Path $dst3)
-            Copy-Item -Recurse -Force $src3 $dst3
-            Write-Host "✅ tailwind oxide native скопирован"
-          }
-
       - name: Build desktop app
         run: pnpm --filter @workspace/desktop make:win
         env:
