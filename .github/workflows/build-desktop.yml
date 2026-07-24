@@ -33,11 +33,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Fix Windows native пакеты
+      - name: Fix все Windows native пакеты
         shell: pwsh
         run: |
           pnpm add -w @rollup/rollup-win32-x64-msvc@4.62.2
           pnpm add -w lightningcss-win32-x64-msvc@1.32.0
+          pnpm add -w @tailwindcss/oxide-win32-x64-msvc@4.3.3
 
       - name: Build desktop app
         run: pnpm --filter @workspace/desktop make:win
