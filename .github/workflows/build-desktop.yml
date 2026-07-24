@@ -33,35 +33,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Диагностика - ищем rollup пакет
-        shell: pwsh
-        run: |
-          Write-Host "=== Ищем rollup win32 пакет ==="
-          $path = "D:\a\NeZabudka\NeZabudka\node_modules\.pnpm"
-          
-          Get-ChildItem -Path $path -Filter "*rollup*" -Recurse -ErrorAction SilentlyContinue |
-            Where-Object { $_.FullName -like "*win32*" } |
-            Select-Object FullName |
-            Format-List
-          
-          Write-Host "=== Содержимое rollup папки ==="
-          $rollupPath = "$path\rollup@4.62.2\node_modules\@rollup"
-          if (Test-Path $rollupPath) {
-            Get-ChildItem $rollupPath | Select-Object Name
-          } else {
-            Write-Host "Папка не найдена: $rollupPath"
-          }
-          
-          Write-Host "=== Проверяем overrides в lockfile ==="
-          $lock = Get-Content "D:\a\NeZabudka\NeZabudka\pnpm-lock.yaml" | 
-            Select-String "win32"
-          if ($lock) {
-            Write-Host "НАЙДЕНЫ win32 строки в lockfile:"
-            $lock
-          } else {
-            Write-Host "win32 строк в lockfile НЕТ - это хорошо"
-          }
-
       - name: Build desktop app
         run: pnpm --filter @workspace/desktop make:win
         env:
