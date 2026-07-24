@@ -1,9 +1,7 @@
 name: Собрать НеЗабудка .exe
 
 on:
-  # Запускается вручную из вкладки Actions на GitHub
   workflow_dispatch:
-  # Автоматически при каждом push в main
   push:
     branches: [main]
     paths:
@@ -18,28 +16,20 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # 1. Скачать код репозитория
       - name: Checkout
         uses: actions/checkout@v4
 
-        # 1.5. Удалить lockfile, чтобы pnpm пересобрал его на Windows
-      - name: Remove lockfile
-        run: Remove-Item -Force -ErrorAction SilentlyContinue pnpm-lock.yaml
-
-      # 2. Установить Node.js 20
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
-      # 3. Установить pnpm
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: '10'
           run_install: false
 
-      # 4. Кэшировать node_modules для скорости
       - name: Get pnpm store directory
         id: pnpm-cache
         shell: bash
@@ -52,24 +42,16 @@ jobs:
           key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: ${{ runner.os }}-pnpm-
 
-      # 5. Установить все зависимости
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
-        # 5.5. Принудительно поставить недостающий Windows-модуль Rollup
-      - name: Fix rollup windows binary
-        run: pnpm add -D @rollup/rollup-win32-x64-msvc -w
-
-      # 6. Собрать фронтенд + упаковать в Electron
       - name: Build desktop app
         run: pnpm --filter @workspace/desktop make:win
         env:
-          # Отключает открытие браузера при сборке Vite
           BROWSER: none
-          # Нужно electron-builder для подписи (без этого собирает без подписи)
           CSC_IDENTITY_AUTO_DISCOVERY: false
+          DEBUG: electron-builder
 
-      # 7. Загрузить готовый установщик как артефакт Actions
       - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
