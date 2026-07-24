@@ -33,65 +33,34 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Установить native пакеты через npm напрямую
+      - name: Диагностика - ищем rollup пакет
         shell: pwsh
         run: |
-          # Устанавливаем через npm (он не смотрит на pnpm overrides)
-          npm install --no-save `
-            @rollup/rollup-win32-x64-msvc@4.62.2 `
-            lightningcss-win32-x64-msvc@1.32.0 `
-            @tailwindcss/oxide-win32-x64-msvc@4.3.3
-
-      - name: Копируем пакеты в pnpm node_modules
-        shell: pwsh
-        run: |
-          $base = "D:\a\NeZabudka\NeZabudka\node_modules\.pnpm"
-
-          # === ROLLUP ===
-          $rollupSrc = "node_modules\@rollup\rollup-win32-x64-msvc"
-          $rollupDst = "$base\rollup@4.62.2\node_modules\@rollup\rollup-win32-x64-msvc"
-          if (Test-Path $rollupSrc) {
-            New-Item -ItemType Directory -Force -Path "$base\rollup@4.62.2\node_modules\@rollup" | Out-Null
-            Copy-Item -Recurse -Force $rollupSrc $rollupDst
-            Write-Host "✅ rollup скопирован"
-          } else {
-            Write-Host "❌ rollup source не найден"
-          }
-
-          # === LIGHTNINGCSS ===
-          $lightSrc = "node_modules\lightningcss-win32-x64-msvc"
-          $lightDst = "$base\lightningcss@1.32.0\node_modules\lightningcss-win32-x64-msvc"
-          if (Test-Path $lightSrc) {
-            New-Item -ItemType Directory -Force -Path "$base\lightningcss@1.32.0\node_modules" | Out-Null
-            Copy-Item -Recurse -Force $lightSrc $lightDst
-            Write-Host "✅ lightningcss скопирован"
-          } else {
-            Write-Host "❌ lightningcss source не найден"
-          }
-
-          # === TAILWIND OXIDE ===
-          $oxideSrc = "node_modules\@tailwindcss\oxide-win32-x64-msvc"
-          $oxideDst = "$base\@tailwindcss+oxide@4.3.3\node_modules\@tailwindcss\oxide-win32-x64-msvc"
-          if (Test-Path $oxideSrc) {
-            New-Item -ItemType Directory -Force -Path "$base\@tailwindcss+oxide@4.3.3\node_modules\@tailwindcss" | Out-Null
-            Copy-Item -Recurse -Force $oxideSrc $oxideDst
-            Write-Host "✅ tailwind oxide скопирован"
-          } else {
-            Write-Host "❌ tailwind oxide source не найден"
-          }
-
-      - name: Проверка что пакеты на месте
-        shell: pwsh
-        run: |
-          $base = "D:\a\NeZabudka\NeZabudka\node_modules\.pnpm"
+          Write-Host "=== Ищем rollup win32 пакет ==="
+          $path = "D:\a\NeZabudka\NeZabudka\node_modules\.pnpm"
           
-          $rollup = "$base\rollup@4.62.2\node_modules\@rollup\rollup-win32-x64-msvc"
-          $light = "$base\lightningcss@1.32.0\node_modules\lightningcss-win32-x64-msvc"
-          $oxide = "$base\@tailwindcss+oxide@4.3.3\node_modules\@tailwindcss\oxide-win32-x64-msvc"
+          Get-ChildItem -Path $path -Filter "*rollup*" -Recurse -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -like "*win32*" } |
+            Select-Object FullName |
+            Format-List
           
-          if (Test-Path $rollup) { Write-Host "✅ rollup OK" } else { Write-Host "❌ rollup НЕТ" }
-          if (Test-Path $light) { Write-Host "✅ lightningcss OK" } else { Write-Host "❌ lightningcss НЕТ" }
-          if (Test-Path $oxide) { Write-Host "✅ tailwind oxide OK" } else { Write-Host "❌ tailwind oxide НЕТ" }
+          Write-Host "=== Содержимое rollup папки ==="
+          $rollupPath = "$path\rollup@4.62.2\node_modules\@rollup"
+          if (Test-Path $rollupPath) {
+            Get-ChildItem $rollupPath | Select-Object Name
+          } else {
+            Write-Host "Папка не найдена: $rollupPath"
+          }
+          
+          Write-Host "=== Проверяем overrides в lockfile ==="
+          $lock = Get-Content "D:\a\NeZabudka\NeZabudka\pnpm-lock.yaml" | 
+            Select-String "win32"
+          if ($lock) {
+            Write-Host "НАЙДЕНЫ win32 строки в lockfile:"
+            $lock
+          } else {
+            Write-Host "win32 строк в lockfile НЕТ - это хорошо"
+          }
 
       - name: Build desktop app
         run: pnpm --filter @workspace/desktop make:win
