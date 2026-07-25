@@ -15,22 +15,36 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: '10'
           run_install: false
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+
+      - name: Создать иконку из маскота
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path artifacts/desktop/assets
+          magick artifacts/smart-notes/src/assets/nezabudka-mascot.png `
+            -define icon:auto-resize=256,128,64,48,32,16 `
+            artifacts/desktop/assets/icon.ico
+          Write-Host "Иконка создана"
+
       - name: Build desktop app
         run: pnpm --filter @workspace/desktop make:win
         env:
           BROWSER: none
           CSC_IDENTITY_AUTO_DISCOVERY: false
+
       - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
@@ -38,7 +52,5 @@ jobs:
           path: |
             artifacts/desktop/release/*.exe
             artifacts/desktop/release/*.zip
-            artifacts/desktop/dist/*.exe
-            artifacts/desktop/dist/*.zip
           retention-days: 30
           if-no-files-found: warn
