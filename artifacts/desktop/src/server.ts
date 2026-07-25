@@ -219,7 +219,7 @@ export async function createServer(dbPath: string, rendererPath: string, wasmPat
   // ── Static renderer ──────────────────────────────────────────────────────────
 
   app.use(express.static(rendererPath));
-  app.get("*", (_req, res) => {
+  app.get(/.*/, (_req, res) => {
     res.sendFile(path.join(rendererPath, "index.html"));
   });
 
