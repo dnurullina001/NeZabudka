@@ -8,7 +8,6 @@
   },
   "files": [
     "dist/main.js",
-    "dist/main.js.map",
     "package.json"
   ],
   "extraResources": [
@@ -22,16 +21,6 @@
       { "target": "zip",  "arch": ["x64"] }
     ],
     "icon": "assets/icon.ico"
-  },
-  "mac": {
-    "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
-    "category": "public.app-category.productivity",
-    "icon": "assets/icon.icns"
-  },
-  "linux": {
-    "target": [{ "target": "AppImage", "arch": ["x64"] }],
-    "category": "Office",
-    "icon": "assets/icon.png"
   },
   "nsis": {
     "oneClick": false,
