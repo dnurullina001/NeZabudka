@@ -42,10 +42,13 @@ NeZabudka_project
 
 ## 💾 Хранение данных
 
-Все данные хранятся **локально на твоём компьютере** в файле SQLite.  
-Никаких облаков, никакой регистрации, никакого интернета — просто открыл и работаешь.
+Все данные хранятся **локально на твоём компьютере** — никаких облаков, никакой регистрации.
+
+Десктопное приложение (`.exe`) использует встроенную **SQLite**-базу через sql.js — интернет не нужен, всё работает из коробки.
 
 📂 Файл базы данных: `%APPDATA%\НеЗабудка\notes.db`
+
+> 💡 **Для разработчиков:** dev-сервер (`artifacts/api-server`) работает с **PostgreSQL** через Drizzle ORM. Укажи `DATABASE_URL` в `.env` и выполни `pnpm --filter @workspace/db push` перед запуском.
 
 ---
 
@@ -62,7 +65,7 @@ NeZabudka_project
 
 ## 🚀 Установка
 
-1. Скачай последний установщик из раздела **[Actions → НеЗабудка-Windows](../../actions)**
+1. Скачай последний установщик из раздела **[Releases](../../releases/latest)**
 2. Запусти `НеЗабудка Setup 1.0.0.exe`
 3. Если Windows предупреждает — нажми **"Подробнее" → "Всё равно запустить"** (это нормально для неподписанных приложений)
 4. Готово! Ярлык появится на рабочем столе
@@ -96,7 +99,8 @@ NeZabudka_project
 | [Electron](https://www.electronjs.org/) | Десктопная оболочка |
 | [React](https://react.dev/) + [Vite](https://vitejs.dev/) | Интерфейс |
 | [Express](https://expressjs.com/) | Локальный сервер внутри приложения |
-| [SQLite](https://www.sqlite.org/) + [Drizzle ORM](https://orm.drizzle.team/) | Локальная база данных |
+| [SQLite](https://www.sqlite.org/) (sql.js) + [Drizzle ORM](https://orm.drizzle.team/) | База данных в десктопном приложении |
+| [PostgreSQL](https://www.postgresql.org/) + [Drizzle ORM](https://orm.drizzle.team/) | База данных в dev-режиме (`DATABASE_URL`) |
 | [TanStack Query](https://tanstack.com/query) | Работа с данными во фронтенде |
 | [shadcn/ui](https://ui.shadcn.com/) | UI-компоненты |
 | [GitHub Actions](https://github.com/features/actions) | Автоматическая сборка EXE |
@@ -106,6 +110,10 @@ NeZabudka_project
 ```bash
 # Установить зависимости
 pnpm install
+
+# Применить схему базы данных (один раз при первой установке или после обновлений схемы)
+# Переменная DATABASE_URL должна быть задана в .env или окружении:
+set -a && source .env && set +a && pnpm --filter @workspace/db push
 
 # Запустить в режиме разработки
 pnpm --filter @workspace/smart-notes run dev
