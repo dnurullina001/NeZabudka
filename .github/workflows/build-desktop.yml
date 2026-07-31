@@ -62,14 +62,19 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          $assets = gh release view latest --json assets --jq '.assets[].name' 2>$null
-          if ($assets) {
-            foreach ($asset in $assets) {
-              gh release delete-asset latest "$asset" --yes
-              Write-Host "Удалён: $asset"
+          gh release view latest 2>$null | Out-Null
+          if ($LASTEXITCODE -eq 0) {
+            $assets = gh release view latest --json assets --jq '.assets[].name' 2>$null
+            if ($assets) {
+              foreach ($asset in $assets) {
+                gh release delete-asset latest "$asset" --yes
+                Write-Host "Удалён: $asset"
+              }
+            } else {
+              Write-Host "Релиз latest есть, но ассетов нет"
             }
           } else {
-            Write-Host "Нет ассетов или релиза latest"
+            Write-Host "Релиза latest ещё не существует — пропускаем"
           }
 
       - name: Создать или обновить релиз latest и загрузить файлы
