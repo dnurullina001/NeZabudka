@@ -76,6 +76,7 @@ jobs:
           } else {
             Write-Host "Релиза latest ещё не существует — пропускаем"
           }
+          exit 0
 
       - name: Создать или обновить релиз latest и загрузить файлы
         uses: softprops/action-gh-release@v2
