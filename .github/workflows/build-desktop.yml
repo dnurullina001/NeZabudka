@@ -12,6 +12,8 @@ jobs:
   build-windows:
     name: Сборка Windows .exe
     runs-on: windows-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,7 +47,7 @@ jobs:
           BROWSER: none
           CSC_IDENTITY_AUTO_DISCOVERY: false
 
-      - name: Upload installer
+      - name: Upload installer (artifact)
         uses: actions/upload-artifact@v4
         with:
           name: НеЗабудка-Windows
@@ -54,3 +56,37 @@ jobs:
             artifacts/desktop/release/*.zip
           retention-days: 30
           if-no-files-found: warn
+
+      - name: Удалить старые ассеты релиза latest
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $assets = gh release view latest --json assets --jq '.assets[].name' 2>$null
+          if ($assets) {
+            foreach ($asset in $assets) {
+              gh release delete-asset latest "$asset" --yes
+              Write-Host "Удалён: $asset"
+            }
+          } else {
+            Write-Host "Нет ассетов или релиза latest"
+          }
+
+      - name: Создать или обновить релиз latest и загрузить файлы
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: НеЗабудка — последняя версия
+          body: |
+            Автоматическая сборка из ветки `main`.
+
+            **Как установить:**
+            1. Скачайте `.exe`-установщик ниже
+            2. Запустите и следуйте инструкциям
+          prerelease: false
+          make_latest: true
+          files: |
+            artifacts/desktop/release/*.exe
+            artifacts/desktop/release/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

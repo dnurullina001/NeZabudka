@@ -8,8 +8,11 @@ import {
   DeleteNoteParams,
   ToggleNoteParams,
 } from "@workspace/api-zod";
+import * as zod from "zod";
 
 const router: IRouter = Router();
+
+const CloneNoteParams = zod.object({ id: zod.coerce.number() });
 
 // GET /notes
 router.get("/notes", async (_req, res): Promise<void> => {
@@ -40,6 +43,7 @@ router.post("/notes", async (req, res): Promise<void> => {
     return;
   }
 
+  const deadlineVal = (parsed.data as { deadline?: string | null }).deadline;
   const [note] = await db
     .insert(notesTable)
     .values({
@@ -47,10 +51,44 @@ router.post("/notes", async (req, res): Promise<void> => {
       projectId: parsed.data.projectId ?? null,
       priority: parsed.data.priority ?? null,
       dayOfWeek: parsed.data.dayOfWeek ?? null,
+      deadline: deadlineVal ? new Date(deadlineVal) : null,
     })
     .returning();
 
   res.status(201).json(note);
+});
+
+// POST /notes/:id/clone
+router.post("/notes/:id/clone", async (req, res): Promise<void> => {
+  const params = CloneNoteParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [existing] = await db
+    .select()
+    .from(notesTable)
+    .where(eq(notesTable.id, params.data.id));
+
+  if (!existing) {
+    res.status(404).json({ error: "Note not found" });
+    return;
+  }
+
+  const [cloned] = await db
+    .insert(notesTable)
+    .values({
+      content: `Копия: ${existing.content}`,
+      projectId: existing.projectId,
+      priority: existing.priority,
+      dayOfWeek: existing.dayOfWeek,
+      deadline: existing.deadline,
+      done: false,
+    })
+    .returning();
+
+  res.status(201).json(cloned);
 });
 
 // PATCH /notes/:id
@@ -72,6 +110,12 @@ router.patch("/notes/:id", async (req, res): Promise<void> => {
   if ("projectId" in parsed.data) updateData.projectId = parsed.data.projectId ?? null;
   if ("priority" in parsed.data) updateData.priority = parsed.data.priority ?? null;
   if ("dayOfWeek" in parsed.data) updateData.dayOfWeek = parsed.data.dayOfWeek ?? null;
+
+  // Handle deadline field
+  const deadlineVal = (parsed.data as { deadline?: string | null | undefined }).deadline;
+  if ("deadline" in parsed.data) {
+    updateData.deadline = deadlineVal ? new Date(deadlineVal) : null;
+  }
 
   const [note] = await db
     .update(notesTable)

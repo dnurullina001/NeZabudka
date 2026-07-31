@@ -58,7 +58,6 @@ export const UpdateProjectParams = zod.object({
 
 
 
-
 export const UpdateProjectBody = zod.object({
   "name": zod.string().min(1).optional(),
   "color": zod.string().min(1).optional()
@@ -90,6 +89,9 @@ export const ListNotesResponseItem = zod.object({
   "content": zod.string(),
   "done": zod.boolean(),
   "projectId": zod.number().nullable(),
+  "priority": zod.enum(["high", "medium", "low"]).nullable().optional(),
+  "dayOfWeek": zod.number().nullable().optional(),
+  "deadline": zod.coerce.date().nullable().optional(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -106,7 +108,8 @@ export const CreateNoteBody = zod.object({
   "content": zod.string().min(1),
   "projectId": zod.number().nullish(),
   "priority": zod.enum(["high", "medium", "low"]).nullish(),
-  "dayOfWeek": zod.number().int().min(0).max(6).nullish()
+  "dayOfWeek": zod.number().int().min(0).max(6).nullish(),
+  "deadline": zod.string().nullish()
 })
 
 export const CreateNoteResponse = zod.object({
@@ -116,6 +119,7 @@ export const CreateNoteResponse = zod.object({
   "projectId": zod.number().nullable(),
   "priority": zod.enum(["high", "medium", "low"]).nullable(),
   "dayOfWeek": zod.number().nullable(),
+  "deadline": zod.coerce.date().nullable().optional(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -145,7 +149,8 @@ export const UpdateNoteBody = zod.object({
   "content": zod.string().min(1).optional(),
   "projectId": zod.number().nullish(),
   "priority": zod.enum(["high", "medium", "low"]).nullish(),
-  "dayOfWeek": zod.number().int().min(0).max(6).nullish()
+  "dayOfWeek": zod.number().int().min(0).max(6).nullish(),
+  "deadline": zod.string().nullish()
 })
 
 export const UpdateNoteResponse = zod.object({
@@ -155,6 +160,7 @@ export const UpdateNoteResponse = zod.object({
   "projectId": zod.number().nullable(),
   "priority": zod.enum(["high", "medium", "low"]).nullable(),
   "dayOfWeek": zod.number().nullable(),
+  "deadline": zod.coerce.date().nullable().optional(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -184,6 +190,27 @@ export const ToggleNoteResponse = zod.object({
   "projectId": zod.number().nullable(),
   "priority": zod.enum(["high", "medium", "low"]).nullable(),
   "dayOfWeek": zod.number().nullable(),
+  "deadline": zod.coerce.date().nullable().optional(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Clone a note
+ */
+export const CloneNoteParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const CloneNoteResponse = zod.object({
+  "id": zod.number(),
+  "content": zod.string(),
+  "done": zod.boolean(),
+  "projectId": zod.number().nullable(),
+  "priority": zod.enum(["high", "medium", "low"]).nullable(),
+  "dayOfWeek": zod.number().nullable(),
+  "deadline": zod.coerce.date().nullable().optional(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -220,6 +247,27 @@ export const CreateVaultEntryResponse = zod.object({
 
 
 /**
+ * @summary Update a vault entry
+ */
+export const UpdateVaultEntryParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateVaultEntryBody = zod.object({
+  "title": zod.string().min(1).optional(),
+  "content": zod.string().min(1).optional()
+})
+
+export const UpdateVaultEntryResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "content": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
  * @summary Delete a vault entry
  */
 export const DeleteVaultEntryParams = zod.object({
@@ -227,5 +275,3 @@ export const DeleteVaultEntryParams = zod.object({
 })
 
 export const DeleteVaultEntryResponse = zod.void()
-
-

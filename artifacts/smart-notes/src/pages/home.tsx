@@ -6,7 +6,7 @@ import mascotLaugh from '@/assets/mascot-laugh.png';
 import mascotWink  from '@/assets/mascot-wink.png';
 import mascotWave  from '@/assets/mascot-wave.png';
 import { useQueryClient } from '@tanstack/react-query';
-import { Plus, Layout, Search, X } from 'lucide-react';
+import { Plus, Layout, Search, X, Download, FileSpreadsheet, FileText, FileType2 } from 'lucide-react';
 import {
   useListNotes,
   useCreateNote,
@@ -31,6 +31,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { exportTxt, exportXlsx, exportDocx } from '@/lib/export';
 
 // Pose lists
 const ALL_POSES = [mascotIdle, mascotWink, mascotKiss, mascotDraw, mascotLaugh, mascotWave];
@@ -97,6 +104,10 @@ const NezabudkaMascot = () => {
   );
 };
 
+const PRIORITY_WEIGHT: Record<string, number> = { high: 3, medium: 2, low: 1 };
+const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+const PRIORITY_LABELS: Record<string, string> = { high: 'высокий', medium: 'средний', low: 'низкий' };
+
 export default function Home() {
   const [newNoteContent, setNewNoteContent] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('none');
@@ -138,6 +149,7 @@ export default function Home() {
   }, [searchOpen]);
 
   const filteredNotes = notes.filter((note) => {
+    // Filter by project/section
     if (filter === 'all') {
       // pass
     } else if (filter === 'none') {
@@ -147,8 +159,18 @@ export default function Home() {
     } else {
       if (note.projectId !== filter) return false;
     }
+    // Search: content, priority label, day of week, deadline
     if (searchQuery.trim()) {
-      return note.content.toLowerCase().includes(searchQuery.toLowerCase());
+      const q = searchQuery.toLowerCase();
+      const inContent = note.content.toLowerCase().includes(q);
+      const inPriority = note.priority ? PRIORITY_LABELS[note.priority]?.includes(q) : false;
+      const inDay = note.dayOfWeek !== null && note.dayOfWeek !== undefined
+        ? DAY_LABELS[note.dayOfWeek]?.toLowerCase().includes(q)
+        : false;
+      const inDeadline = note.deadline
+        ? new Date(note.deadline).toLocaleDateString('ru').includes(q)
+        : false;
+      return inContent || inPriority || inDay || inDeadline;
     }
     return true;
   });
@@ -156,9 +178,8 @@ export default function Home() {
   const activeNotes = filteredNotes
     .filter((note) => !note.done)
     .sort((a, b) => {
-      const pValue = { high: 3, medium: 2, low: 1 };
-      const aVal = a.priority ? pValue[a.priority as keyof typeof pValue] : 0;
-      const bVal = b.priority ? pValue[b.priority as keyof typeof pValue] : 0;
+      const aVal = a.priority ? PRIORITY_WEIGHT[a.priority] ?? 0 : 0;
+      const bVal = b.priority ? PRIORITY_WEIGHT[b.priority] ?? 0 : 0;
       return bVal - aVal;
     });
   
@@ -229,6 +250,26 @@ export default function Home() {
     return p ? p.name : 'Проект';
   };
 
+  const handleExportXlsx = async () => {
+    try {
+      await exportXlsx(notes, projects);
+    } catch {
+      toast({ title: 'Ошибка экспорта', description: 'Не удалось создать Excel-файл', variant: 'destructive' });
+    }
+  };
+
+  const handleExportDocx = async () => {
+    try {
+      await exportDocx(notes, projects);
+    } catch {
+      toast({ title: 'Ошибка экспорта', description: 'Не удалось создать Word-файл', variant: 'destructive' });
+    }
+  };
+
+  const handleExportTxt = () => {
+    exportTxt(notes, projects);
+  };
+
   return (
     <div className="h-[100dvh] w-full bg-background flex flex-col md:flex-row overflow-hidden">
       {/* Mobile Header */}
@@ -268,7 +309,7 @@ export default function Home() {
                 <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground">
                   {getProjectName()}
                 </h2>
-                {/* Search toggle */}
+                {/* Search + Export */}
                 <div className="flex items-center gap-2">
                   {searchOpen ? (
                     <div className="flex items-center gap-1 bg-card border border-card-border rounded-lg px-2 py-1 shadow-sm">
@@ -298,6 +339,32 @@ export default function Home() {
                       <Search className="w-4 h-4" />
                     </button>
                   )}
+
+                  {/* Export button */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        title="Экспорт"
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-44">
+                      <DropdownMenuItem onClick={handleExportXlsx} className="gap-2 cursor-pointer">
+                        <FileSpreadsheet className="w-4 h-4 text-green-600" />
+                        Excel (.xlsx)
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportTxt} className="gap-2 cursor-pointer">
+                        <FileText className="w-4 h-4 text-blue-500" />
+                        Текст (.txt)
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportDocx} className="gap-2 cursor-pointer">
+                        <FileType2 className="w-4 h-4 text-blue-700" />
+                        Word (.docx)
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
               <StatsBar stats={stats} isLoading={statsLoading} />
@@ -391,7 +458,8 @@ export default function Home() {
                         <NoteItem
                           key={note.id}
                           note={note}
-                          project={projects.find(p => p.id === note.projectId)}
+                          project={note.projectId ? projects.find(p => p.id === note.projectId) : undefined}
+                          projects={projects}
                           index={index}
                           onToggle={handleToggleNote}
                           onDelete={handleDeleteNote}
@@ -412,7 +480,8 @@ export default function Home() {
                         <NoteItem
                           key={note.id}
                           note={note}
-                          project={projects.find(p => p.id === note.projectId)}
+                          project={note.projectId ? projects.find(p => p.id === note.projectId) : undefined}
+                          projects={projects}
                           index={index}
                           onToggle={handleToggleNote}
                           onDelete={handleDeleteNote}

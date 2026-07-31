@@ -40,6 +40,8 @@ export interface Note {
   priority: 'high' | 'medium' | 'low' | null;
   /** 0=Mon … 6=Sun @nullable */
   dayOfWeek: number | null;
+  /** Optional deadline timestamp @nullable */
+  deadline: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -53,6 +55,8 @@ export interface NoteInput {
   priority?: 'high' | 'medium' | 'low' | null;
   /** 0=Mon … 6=Sun @nullable */
   dayOfWeek?: number | null;
+  /** Optional deadline ISO string @nullable */
+  deadline?: string | null;
 }
 
 export interface NoteUpdate {
@@ -64,6 +68,8 @@ export interface NoteUpdate {
   priority?: 'high' | 'medium' | 'low' | null;
   /** 0=Mon … 6=Sun @nullable */
   dayOfWeek?: number | null;
+  /** Optional deadline ISO string @nullable */
+  deadline?: string | null;
 }
 
 export interface NoteStats {
@@ -87,7 +93,13 @@ export interface VaultEntryInput {
   content: string;
 }
 
+export interface VaultEntryUpdate {
+  /** @minLength 1 */
+  title?: string;
+  /** @minLength 1 */
+  content?: string;
+}
+
 export interface ApiError {
   error: string;
 }
-

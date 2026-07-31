@@ -14,6 +14,8 @@ tags:
     description: Notes operations
   - name: projects
     description: Projects operations
+  - name: vault
+    description: Vault operations
 paths:
   /healthz:
     get:
@@ -230,6 +232,113 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiError"
 
+  /notes/{id}/clone:
+    post:
+      operationId: cloneNote
+      tags: [notes]
+      summary: Clone a note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "201":
+          description: Cloned note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /vault:
+    get:
+      operationId: listVaultEntries
+      tags: [vault]
+      summary: List all vault entries
+      responses:
+        "200":
+          description: List of vault entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VaultEntry"
+    post:
+      operationId: createVaultEntry
+      tags: [vault]
+      summary: Create a vault entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VaultEntryInput"
+      responses:
+        "201":
+          description: Created vault entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VaultEntry"
+
+  /vault/{id}:
+    patch:
+      operationId: updateVaultEntry
+      tags: [vault]
+      summary: Update a vault entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VaultEntryUpdate"
+      responses:
+        "200":
+          description: Updated vault entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VaultEntry"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    delete:
+      operationId: deleteVaultEntry
+      tags: [vault]
+      summary: Delete a vault entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
 components:
   schemas:
     HealthStatus:
@@ -292,6 +401,20 @@ components:
           type: boolean
         projectId:
           type: ["integer", "null"]
+        priority:
+          type: ["string", "null"]
+          enum: ["high", "medium", "low", null]
+          description: "high | medium | low | null"
+          nullable: true
+        dayOfWeek:
+          type: ["integer", "null"]
+          description: "0=Mon … 6=Sun"
+          nullable: true
+        deadline:
+          type: ["string", "null"]
+          format: date-time
+          description: "Optional deadline timestamp"
+          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -314,6 +437,18 @@ components:
           minLength: 1
         projectId:
           type: ["integer", "null"]
+        priority:
+          type: ["string", "null"]
+          enum: ["high", "medium", "low", null]
+          nullable: true
+        dayOfWeek:
+          type: ["integer", "null"]
+          description: "0=Mon … 6=Sun"
+          nullable: true
+        deadline:
+          type: ["string", "null"]
+          format: date-time
+          nullable: true
       required:
         - content
 
@@ -325,6 +460,17 @@ components:
           minLength: 1
         projectId:
           type: ["integer", "null"]
+        priority:
+          type: ["string", "null"]
+          enum: ["high", "medium", "low", null]
+          nullable: true
+        dayOfWeek:
+          type: ["integer", "null"]
+          nullable: true
+        deadline:
+          type: ["string", "null"]
+          format: date-time
+          nullable: true
 
     NoteStats:
       type: object
@@ -339,6 +485,51 @@ components:
         - total
         - active
         - done
+
+    VaultEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - content
+        - createdAt
+        - updatedAt
+
+    VaultEntryInput:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        content:
+          type: string
+          minLength: 1
+      required:
+        - title
+        - content
+
+    VaultEntryUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        content:
+          type: string
+          minLength: 1
 
     ApiError:
       type: object

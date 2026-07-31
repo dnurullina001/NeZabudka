@@ -10,6 +10,7 @@ export const notesTable = pgTable("notes", {
   projectId: integer("project_id").references(() => projectsTable.id, { onDelete: "set null" }),
   priority: text("priority"),  // 'high' | 'medium' | 'low' | null
   dayOfWeek: integer("day_of_week"),  // 0=Mon … 6=Sun | null
+  deadline: timestamp("deadline", { withTimezone: true }),  // optional deadline datetime
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
